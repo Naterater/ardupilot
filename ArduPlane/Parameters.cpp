@@ -38,7 +38,7 @@ const AP_Param::Info Plane::var_info[] = {
 
     // @Param: AUTOTUNE_LEVEL
     // @DisplayName: Autotune level
-    // @Description: Level of aggressiveness for autotune. When autotune is run a lower AUTOTUNE_LEVEL will result in a 'softer' tune, with less aggressive gains. For most users a level of 6 is recommended.
+    // @Description: Level of aggressiveness of pitch and roll PID gains. Lower values result in a 'softer' tune. Level 6 recommended for most planes.
     // @Range: 1 10
     // @Increment: 1
     // @User: Standard
@@ -62,7 +62,7 @@ const AP_Param::Info Plane::var_info[] = {
 
     // @Param: KFF_RDDRMIX
     // @DisplayName: Rudder Mix
-    // @Description: The amount of rudder mix to apply during aileron movement 0 = 0 %, 1 = 100%
+    // @Description: Percentage of rudder to add during aileron movement. Increase if nose initially yaws away from roll. Coordinates turns.
     // @Range: 0 1
     // @Increment: 0.01
     // @User: Standard
@@ -70,7 +70,7 @@ const AP_Param::Info Plane::var_info[] = {
 
     // @Param: KFF_THR2PTCH
     // @DisplayName: Throttle to Pitch Mix
-    // @Description: Throttle to pitch feed-forward gain.
+    // @Description: Degrees of elevator added for full throttle application. Increase to compensate for throttle causing down pitch.
     // @Range: 0 5
     // @Increment: 0.01
     // @User: Advanced
@@ -78,7 +78,7 @@ const AP_Param::Info Plane::var_info[] = {
 
     // @Param: STAB_PITCH_DOWN
     // @DisplayName: Low throttle pitch down trim 
-    // @Description: This controls the amount of down pitch to add in FBWA and AUTOTUNE modes when at low throttle. No down trim is added when throttle is above TRIM_THROTTLE. Below TRIM_THROTTLE downtrim is added in proportion to the amount the throttle is below TRIM_THROTTLE. At zero throttle the full downpitch specified in this parameter is added. This parameter is meant to help keep airspeed up when flying in FBWA mode with low throttle, such as when on a landing approach, without relying on an airspeed sensor. A value of 2 degrees is good for many planes, although a higher value may be needed for high drag aircraft.
+    // @Description: Degrees of down pitch added when throttle is below TRIM_THROTTLE in FBWA and AUTOTUNE modes. Scales linearly so full value is added when THR_MIN is reached. Helps to keep airspeed higher in glides or landing approaches and prevents accidental stalls. 2 degrees recommended for most planes.
     // @Range: 0 15
     // @Increment: 0.1
     // @Units: deg
