@@ -33,7 +33,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
 
     // 12 ~ 16 were used by position, velocity and acceleration PIDs
 
-    // @Group: P_
+    // @Group: P
     // @Path: ../libraries/AC_AttitudeControl/AC_PosControl.cpp
     AP_SUBGROUPPTR(pos_control, "P", 17, QuadPlane, AC_PosControl),
 
@@ -332,7 +332,7 @@ const AP_Param::GroupInfo QuadPlane::var_info[] = {
     AP_GROUPINFO("OPTIONS", 58, QuadPlane, options, 0),
 
     AP_SUBGROUPEXTENSION("",59, QuadPlane, var_info2),
-    
+
     AP_GROUPEND
 };
 
@@ -376,6 +376,21 @@ const AP_Param::GroupInfo QuadPlane::var_info2[] = {
     // @Range: 0 80
     // @User: Standard
     AP_GROUPINFO("TAILSIT_RLL_MX", 5, QuadPlane, tailsitter.max_roll_angle, 0),
+
+#if QAUTOTUNE_ENABLED
+    // @Group: AUTOTUNE_
+    // @Path: qautotune.cpp
+    AP_SUBGROUPINFO(qautotune, "AUTOTUNE_",  6, QuadPlane, QAutoTune),
+#endif
+
+    // @Param: FW_LND_APR_RAD
+    // @DisplayName: Quadplane fixed wing landing approach radius
+    // @Description: This provides the radius used, when using a fixed wing landing approach. If set to 0 then the WP_LOITER_RAD will be selected.
+    // @Units: m
+    // @Range: 0 200
+    // @Increment: 5
+    // @User: Advanced
+    AP_GROUPINFO("FW_LND_APR_RAD", 7, QuadPlane, fw_land_approach_radius, 0),
 
     AP_GROUPEND
 };
@@ -930,7 +945,7 @@ bool QuadPlane::is_flying_vtol(void) const
     if (plane.control_mode == GUIDED && guided_takeoff) {
         return true;
     }
-    if (plane.control_mode == QSTABILIZE || plane.control_mode == QHOVER || plane.control_mode == QLOITER) {
+    if (plane.control_mode == QSTABILIZE || plane.control_mode == QHOVER || plane.control_mode == QLOITER || plane.control_mode == QAUTOTUNE) {
         // in manual flight modes only consider aircraft landed when pilot demanded throttle is zero
         return plane.get_throttle_input() > 0;
     }
@@ -1630,6 +1645,11 @@ void QuadPlane::control_run(void)
     case QRTL:
         control_qrtl();
         break;
+#if QAUTOTUNE_ENABLED
+    case QAUTOTUNE:
+        qautotune.run();
+        break;
+#endif
     default:
         break;
     }
@@ -1673,6 +1693,10 @@ bool QuadPlane::init_mode(void)
     case GUIDED:
         guided_takeoff = false;
         break;
+#if QAUTOTUNE_ENABLED
+    case QAUTOTUNE:
+        return qautotune.init();
+#endif
     default:
         break;
     }
@@ -1762,6 +1786,7 @@ bool QuadPlane::in_vtol_mode(void) const
             plane.control_mode == QLOITER ||
             plane.control_mode == QLAND ||
             plane.control_mode == QRTL ||
+            plane.control_mode == QAUTOTUNE ||
             ((plane.control_mode == GUIDED || plane.control_mode == AVOID_ADSB) && plane.auto_state.vtol_loiter) ||
             in_vtol_auto());
 }
@@ -2338,7 +2363,8 @@ int8_t QuadPlane::forward_throttle_pct(void)
         !motors->armed() ||
         vel_forward.gain <= 0 ||
         plane.control_mode == QSTABILIZE ||
-        plane.control_mode == QHOVER) {
+        plane.control_mode == QHOVER ||
+        plane.control_mode == QAUTOTUNE) {
         return 0;
     }
 
@@ -2415,7 +2441,8 @@ float QuadPlane::get_weathervane_yaw_rate_cds(void)
         !motors->armed() ||
         weathervane.gain <= 0 ||
         plane.control_mode == QSTABILIZE ||
-        plane.control_mode == QHOVER) {
+        plane.control_mode == QHOVER ||
+        plane.control_mode == QAUTOTUNE) {
         weathervane.last_output = 0;
         return 0;
     }
