@@ -19,7 +19,6 @@
 
 #include <AP_HAL/AP_HAL.h>
 #include <AP_HAL/I2CDevice.h>
-#include <AP_Common/Semaphore.h>
 
 #include <AP_BoardConfig/AP_BoardConfig.h>
 #include "OreoLED_I2C.h"
@@ -425,7 +424,7 @@ void OreoLED_I2C::boot_leds(void)
     }
 }
 
-// update_timer - called by scheduler and updates PX4 driver with commands
+// update_timer - called by scheduler and updates driver with commands
 void OreoLED_I2C::update_timer(void)
 {
     WITH_SEMAPHORE(_sem);
@@ -440,7 +439,7 @@ void OreoLED_I2C::update_timer(void)
         boot_leds();
     }
 
-    // send a sync every 4.1s. The PX4 driver uses 4ms, but using
+    // send a sync every 4.1s. The driver uses 4ms, but using
     // exactly 4ms does not work. It seems that the oreoled firmware
     // relies on the inaccuracy of the NuttX scheduling for this to
     // work, and exactly 4ms from ChibiOS causes syncronisation to
@@ -545,11 +544,11 @@ void OreoLED_I2C::send_sync(void)
 
 
 // Handle an LED_CONTROL mavlink message
-void OreoLED_I2C::handle_led_control(mavlink_message_t *msg)
+void OreoLED_I2C::handle_led_control(const mavlink_message_t &msg)
 {
     // decode mavlink message
     mavlink_led_control_t packet;
-    mavlink_msg_led_control_decode(msg, &packet);
+    mavlink_msg_led_control_decode(&msg, &packet);
 
     // exit immediately if instance is invalid
     if (packet.instance >= OREOLED_NUM_LEDS && packet.instance != OREOLED_INSTANCE_ALL) {

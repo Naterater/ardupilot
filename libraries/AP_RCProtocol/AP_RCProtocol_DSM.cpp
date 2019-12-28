@@ -169,7 +169,7 @@ void AP_RCProtocol_DSM::dsm_guess_format(bool reset, const uint8_t dsm_frame[16]
     }
 
     /* call ourselves to reset our state ... we have to try again */
-    debug("DSM: format detect fail, 10: 0x%08x %d 11: 0x%08x %d", cs10, votes10, cs11, votes11);
+    debug("DSM: format detect fail, 10: 0x%08x %u 11: 0x%08x %u", cs10, votes10, cs11, votes11);
     dsm_guess_format(true, dsm_frame);
 }
 
@@ -405,7 +405,6 @@ bool AP_RCProtocol_DSM::dsm_parse_byte(uint32_t frame_time_ms, uint8_t b, uint16
         if ((frame_time_ms - last_rx_time_ms) >= 5) {
             dsm_decode_state = DSM_DECODE_STATE_SYNC;
             byte_input.ofs = 0;
-            chan_count = 0;
             byte_input.buf[byte_input.ofs++] = b;
         }
         break;
